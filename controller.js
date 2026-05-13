@@ -55,27 +55,33 @@ export const signer = async (req, res) => {
         return res.status(500).json({ message: 'error', details: err.message });
     }
 }
-export const loginer=async(req,res)=>{
-    try{
-      const {Email,Password}=req.body;
-      const user=await usersign.findOne({Email:Email})
-      if(!user){
-        return res.status(404).json({message:'Email not foun'})
-      }
-      const pass=await bcrypt.compare(Password,user.Password)
-      if(!pass){
-        return res.status(404).json({message:'error password'})
-      }
-      const token=jwt.sign(
-        {userid:user._id},'secretkey',{expiresIn:'1d'}
-      );
-      res.status(202).json({
-        message:'تم بنجاح ',
-        token:token,
-        userid:user._id
-      })
-    }catch(err){
-         res.status(500).json({message:'error'})
+export const loginer = async (req, res) => {
+    try {
+        const { Email, Password } = req.body;
+        const user = await usersign.findOne({ Email: Email.toLowerCase() }); // تأمين الـ lowercase
+        if (!user) {
+            return res.status(404).json({ message: 'Email not found' });
+        }
+        const pass = await bcrypt.compare(Password, user.Password);
+        if (!pass) {
+            return res.status(401).json({ message: 'error password' });
+        }
+        const token = jwt.sign(
+            { userid: user._id }, 'secretkey', { expiresIn: '1d' }
+        );
+        
+        // السطر اللي جاي ده هو اللي هيصلح الفرونت إند
+        res.status(200).json({
+            message: 'تم بنجاح',
+            token: token,
+            user: {
+                Username: user.Username,
+                Email: user.Email,
+                Phone: user.Phone
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ message: 'error server', details: err.message });
     }
 }
 export const getuserprofile=async(req,res)=>{
