@@ -21,17 +21,37 @@ export const shower=async(req,res)=>{
         res.status(500).json({message:'error',err})
     }
 }
-export const signer=async(req,res)=>{
-    try{
-        const inputs=req.body;
-    const added=new usersign(inputs);
-    await added.save();
-    const token=jwt.sign(
-        {userid:added._id},'secretkey',{expiresIn:'1d'}
-    )
-    res.status(200).json({message:'done',usrid:added._id,token:token})
-    } catch(err){
-        res.status(500).json({message:'error'})
+export const signer = async (req, res) => {
+    try {
+        const inputs = req.body;
+        
+        // 1. نتأكد إن الإيميل مش موجود قبل كدة عشان ميديناش Error من المونجو
+        const existingUser = await usersign.findOne({ Email: inputs.Email });
+        if (existingUser) {
+            return res.status(400).json({ message: 'الإيميل ده مسجل قبل كدة يا هندسة' });
+        }
+
+        const added = new usersign(inputs);
+        await added.save();
+
+        // 2. بنعمل التوكن
+        const token = jwt.sign(
+            { userid: added._id }, 
+            'secretkey', 
+            { expiresIn: '1d' }
+        );
+
+        // 3. الرد النهائي (ده اللي بيخلي الـ 500 تختفي)
+        return res.status(200).json({ 
+            message: 'done', 
+            userid: added._id, 
+            token: token 
+        });
+
+    } catch (err) {
+        console.error("Sign up error:", err);
+        // بنبعت الـ error الحقيقي عشان نفهمه
+        return res.status(500).json({ message: 'error', details: err.message });
     }
 }
 export const loginer=async(req,res)=>{
