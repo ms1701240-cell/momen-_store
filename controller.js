@@ -17,9 +17,10 @@ export const shower=async(req,res)=>{
     try{
      const finder= await feedbacksmodel.find().sort({_id:-1})
      res.json(finder);
-    }catch(err){
-        res.status(500).json({message:'error',err})
-    }
+    }catch (err) {
+    // السطر ده هيخلينا نشوف الرسالة الحقيقية في المتصفح بدل القوسين الفاضيين
+    res.status(500).json({ message: 'error', details: err.message });
+}
 }
 export const signer = async (req, res) => {
     try {
