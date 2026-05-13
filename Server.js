@@ -6,7 +6,11 @@ import { getuserprofile, inputs, logincart, loginer, shower, signer, updatecart,
 
 dotenv.config();
 const app=express();
-app.use(cors());
+app.use(cors({
+    origin: '*', // أو حط لينك الفرونت إند بتاعك لو عايز تأمنه أكتر
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 mongoose.connect(process.env.MONGO_URI) // شيل الـ family: 4 وجرب اللينك اللي بعتهولك فوق
