@@ -58,32 +58,29 @@ export const signer = async (req, res) => {
 export const loginer = async (req, res) => {
     try {
         const { Email, Password } = req.body;
-        const user = await usersign.findOne({ Email: Email.toLowerCase() }); // تأمين الـ lowercase
+        // 1. بندور على اليوزر بالإيميل (lowercase للتأمين)
+        const user = await usersign.findOne({ Email: Email.toLowerCase() });
         if (!user) {
-            return res.status(404).json({ message: 'Email not found' });
+            return res.status(401).json({ message: 'Email not found' });
         }
-        const pass = await bcrypt.compare(Password, user.Password);
-        if (!pass) {
-            return res.status(401).json({ message: 'error password' });
+        // 2. بنقارن الباسورد المشفر
+        const isMatch = await bcrypt.compare(Password, user.Password);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Wrong password' });
         }
-        const token = jwt.sign(
-            { userid: user._id }, 'secretkey', { expiresIn: '1d' }
-        );
-        
-        // السطر اللي جاي ده هو اللي هيصلح الفرونت إند
+        // 3. بنعمل التوكن
+        const token = jwt.sign({ userid: user._id }, 'secretkey', { expiresIn: '1d' });
+
+        // 4. الرد الكامل (ده اللي هيحل مشكلة الفيدباك وجاري التحميل)
         res.status(200).json({
-            message: 'تم بنجاح',
-            token: token,
-            user: {
-                Username: user.Username,
-                Email: user.Email,
-                Phone: user.Phone
-            }
+            message: 'Success',
+            token,
+            user: { Username: user.Username, Email: user.Email, Phone: user.Phone }
         });
     } catch (err) {
-        res.status(500).json({ message: 'error server', details: err.message });
+        res.status(500).json({ message: 'Server error', details: err.message });
     }
-}
+};
 export const getuserprofile=async(req,res)=>{
     try{
     const finder=await usersign.findById(req.user.userid).select('-Password')
