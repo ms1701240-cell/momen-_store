@@ -14,5 +14,7 @@ users.pre('save',async function() {
     this.Password=await bcrypt.hash(this.Password,salt)
 })
 
+
+
 const signupuser= mongoose.model('userstore',users)
 export default signupuser;
